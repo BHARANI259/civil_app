@@ -1,247 +1,333 @@
-import 'package:flutter/material.dart';
-import 'site_work_page.dart';
-import 'material_page.dart';
 
-class SupervisorDashboardPage extends StatelessWidget {
-  const SupervisorDashboardPage({super.key});
+import 'package:flutter/material.dart';
+import 'worker_management_page.dart';
+import 'material_request_page.dart';
+
+class SupervisorDashboardPage extends StatefulWidget {
+  final Map<String, String> ownerDetails;
+
+  const SupervisorDashboardPage({
+    super.key,
+    this.ownerDetails = const {},
+  });
+
+  @override
+  State<SupervisorDashboardPage> createState() =>
+      _SupervisorDashboardPageState();
+}
+
+class _SupervisorDashboardPageState
+    extends State<SupervisorDashboardPage> {
+  final List<Map<String, String>> workers = [];
+  final List<Map<String, String>> materials = [];
+
+  static const teal = Color(0xFF087F8C);
+  static const navy = Color(0xFF123B5D);
+
+  Future<void> addWorker() async {
+    final result = await Navigator.push<Map<String, String>>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const WorkerManagementPage(),
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() => workers.add(result));
+    }
+  }
+
+  Future<void> addMaterial() async {
+    final result = await Navigator.push<Map<String, String>>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const MaterialRequestPage(),
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() => materials.add(result));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final totalWorkers = workers.fold<int>(
+      0,
+      (sum, worker) =>
+          sum + (int.tryParse(worker['Headcount'] ?? '') ?? 0),
+    );
+
+    final totalSalary = workers.fold<double>(
+      0,
+      (sum, worker) =>
+          sum + (double.tryParse(worker['Total Salary'] ?? '') ?? 0),
+    );
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: const Color(0xFFF3F7F8),
       appBar: AppBar(
-        title: const Text('Supervisor Dashboard'),
-        actions: const [
-          Icon(Icons.notifications_none),
-          SizedBox(width: 15),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(18),
-        children: [
-          _siteHeader(),
-          const SizedBox(height: 18),
-          _progressCard(),
-          const SizedBox(height: 20),
-
-          const Text(
-            'Today at Site',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 10),
-
-          Row(
-            children: [
-              _stat('Workers', '18/20', Icons.people),
-              _stat('Tasks', '3/5', Icons.task_alt),
-              _stat('Issues', '2', Icons.warning_amber),
-            ],
-          ),
-
-          const SizedBox(height: 20),
-
-          _menuButton(
-            context,
-            'Today\'s Site Work',
-            'Manage construction tasks and attendance',
-            Icons.construction,
-            const SiteWorkPage(),
-          ),
-
-          _menuButton(
-            context,
-            'Material Management',
-            'Check and request construction materials',
-            Icons.inventory_2_outlined,
-            const MaterialManagementPage(),
-          ),
-
-          const SizedBox(height: 15),
-
-          const Text(
-            'Site Safety',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          Card(
-            child: ListTile(
-              leading: const Icon(
-                Icons.health_and_safety,
-                size: 35,
-              ),
-              title: const Text(
-                'Safety Status',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: const Text(
-                'All workers have safety equipment',
-              ),
-              trailing: const Icon(
-                Icons.check_circle,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _siteHeader() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1769AA),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'CONSTRUCTION SITE',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 13,
-            ),
-          ),
-          SizedBox(height: 7),
-          Text(
-            'Dharapuram Building Project',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 21,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 8),
-          Row(
-            children: [
-              Icon(
-                Icons.location_on,
-                color: Colors.white,
-                size: 17,
-              ),
-              SizedBox(width: 5),
-              Text(
-                'Dharapuram, Tamil Nadu',
-                style: TextStyle(color: Colors.white),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _progressCard() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Overall Progress',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                Text(
-                  '45%',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            const LinearProgressIndicator(
-              value: 0.45,
-              minHeight: 8,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Construction work is in progress',
-              style: TextStyle(
-                color: Colors.grey[600],
-              ),
-            ),
-          ],
+        backgroundColor: teal,
+        foregroundColor: Colors.white,
+        title: const Text(
+          'Supervisor Dashboard',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Back to Owner',
+          onPressed: () => Navigator.pop(context),
         ),
       ),
-    );
-  }
-
-  Widget _stat(String title, String value, IconData icon) {
-    return Expanded(
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          child: Column(
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [teal, navy],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(22),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.engineering_rounded,
+                  color: Colors.white,
+                  size: 42,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'SITE OPERATIONS',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Daily Work Overview',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (widget.ownerDetails['Project Name'] != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Project: ${widget.ownerDetails['Project Name']}',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ],
+                if (widget.ownerDetails['Construction Location'] !=
+                    null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    widget.ownerDetails['Construction Location']!,
+                    style: const TextStyle(color: Colors.white70),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 22),
+          Row(
             children: [
-              Icon(icon, size: 25),
-              const SizedBox(height: 6),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 19,
+              Expanded(
+                child: summaryCard(
+                  'Worker Headcount',
+                  '$totalWorkers',
+                  Icons.groups_rounded,
+                  const Color(0xFFDDF5EF),
+                  teal,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: summaryCard(
+                  'Total Salary',
+                  '₹${totalSalary.toStringAsFixed(0)}',
+                  Icons.payments_rounded,
+                  const Color(0xFFE5EEFF),
+                  const Color(0xFF1769AA),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 25),
+          sectionTitle('Workforce', Icons.people_alt_rounded),
+          const SizedBox(height: 10),
+          actionCard(
+            'Add Worker Details',
+            'Category, headcount and daily wages',
+            Icons.person_add_alt_1_rounded,
+            addWorker,
+          ),
+          ...workers.map(
+            (worker) => recordCard(
+              worker['Category'] ?? 'Worker',
+              'Headcount: ${worker['Headcount']}\n'
+                  'Daily wage: ₹${worker['Daily Wage']}\n'
+                  'Total salary: ₹${worker['Total Salary']}',
+              Icons.groups_rounded,
+            ),
+          ),
+          const SizedBox(height: 24),
+          sectionTitle(
+            'Material Requirements',
+            Icons.inventory_2_rounded,
+          ),
+          const SizedBox(height: 10),
+          actionCard(
+            'Add Material Request',
+            'Item, quantity, date and urgency',
+            Icons.add_box_rounded,
+            addMaterial,
+          ),
+          ...materials.map(
+            (material) => recordCard(
+              material['Item'] ?? 'Material',
+              'Quantity: ${material['Quantity']} ${material['Unit']}\n'
+                  'Required by: ${material['Required By']}\n'
+                  'Urgency: ${material['Urgency']}',
+              Icons.inventory_rounded,
+            ),
+          ),
+          const SizedBox(height: 28),
+          SizedBox(
+            height: 54,
+            child: OutlinedButton.icon(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_back_rounded),
+              label: const Text(
+                'Back to Owner Dashboard',
+                style: TextStyle(
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 3),
-              Text(title),
-            ],
+              style: OutlinedButton.styleFrom(
+                foregroundColor: navy,
+                side: const BorderSide(color: navy),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 
-  Widget _menuButton(
-    BuildContext context,
+  Widget sectionTitle(String title, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, size: 28, color: teal),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 21,
+              fontWeight: FontWeight.bold,
+              color: navy,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget summaryCard(
+    String title,
+    String value,
+    IconData icon,
+    Color background,
+    Color foreground,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(17),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(17),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 30, color: foreground),
+          const SizedBox(height: 12),
+          Text(title, style: const TextStyle(fontSize: 13)),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: foreground,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget actionCard(
     String title,
     String subtitle,
     IconData icon,
-    Widget page,
+    VoidCallback onTap,
   ) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 10),
+      color: Colors.white,
+      elevation: 1,
       child: ListTile(
-        contentPadding: const EdgeInsets.all(10),
+        contentPadding: const EdgeInsets.all(12),
         leading: CircleAvatar(
           radius: 25,
-          child: Icon(icon),
+          backgroundColor: const Color(0xFFDDF5EF),
+          child: Icon(icon, color: teal),
         ),
         title: Text(
           title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text(subtitle),
-        trailing: const Icon(
-          Icons.arrow_forward_ios,
-          size: 17,
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 5),
+          child: Text(subtitle),
         ),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => page,
-            ),
-          );
-        },
+        trailing: const Icon(Icons.arrow_forward_ios, size: 17),
+        onTap: onTap,
+      ),
+    );
+  }
+
+  Widget recordCard(
+    String title,
+    String subtitle,
+    IconData icon,
+  ) {
+    return Card(
+      margin: const EdgeInsets.only(top: 10),
+      color: Colors.white,
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: const Color(0xFFE5EEFF),
+          child: Icon(icon, color: navy),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: Text(subtitle),
+        ),
       ),
     );
   }
